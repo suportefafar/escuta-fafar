@@ -1,0 +1,110 @@
+/**
+Theme Name: astra-escuta
+Author: Brainstorm Force
+Author URI: http://wpastra.com/about/
+Description: Astra is the fastest, fully customizable & beautiful theme suitable for blogs, personal portfolios and business websites. It is very lightweight (less than 50KB on frontend) and offers unparalleled speed. Built with SEO in mind, Astra comes with schema.org code integrated so search engines will love your site. Astra offers plenty of sidebar options and widget areas giving you a full control for customizations. Furthermore, we have included special features and templates so feel free to choose any of your favorite page builder plugin to create pages flexibly. Some of the other features: # WooCommerce Ready # Responsive # Compatible with major plugins # Translation Ready # Extendible with premium addons # Regularly updated # Designed, Developed, Maintained & Supported by Brainstorm Force. Looking for a perfect base theme? Look no further. Astra is fast, fully customizable and beautiful theme!
+Version: 1.0.0
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: astra-escuta
+Template: astra
+*/
+
+:root {
+  --cor-1: #06d6a0;
+  --cor-2: #235789;
+  --cor-3: #1e293b;
+  --cor-4: #67768e;
+  --cor-5: #ffffff;
+  --cor-6: #f2f5f7;
+  --cor-7: #ffcd57;
+  --cor-8: #d52941;
+  --cor-9: #eeeeee;
+  --bg-9: #06d6a031;
+  --bg-10: #23578931;
+  --cor-positivo: #06d6a0;
+  --cor-negativo: #d52941;
+}
+
+.container-perfil-imagem {
+  background-color: var(--cor-6);
+  display: flex;
+  justify-content: center;
+}
+
+.icone-flutuante {
+  display: none;
+}
+
+.linha-arquivo {
+  height: 2rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.texto-resposta-afirmativa {
+  color: var(--cor-positivo) !important;
+}
+
+.texto-resposta-negativa {
+  color: var(--cor-negativo) !important;
+}
+
+@media (min-width: 1024px) {
+}
+
+/*
+  FAFAR AW BUTTON
+  START
+*/
+
+.fafar-aw-clean-button {
+  align-items: center;
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
+  box-sizing: border-box;
+  color: rgba(0, 0, 0, 0.85);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: system-ui, -apple-system, system-ui, "Helvetica Neue", Helvetica,
+    Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  justify-content: center;
+  line-height: 1.25;
+  min-height: 3rem;
+  padding: calc(0.875rem - 1px) calc(1.5rem - 1px);
+  text-decoration: none;
+  transition: all 250ms;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: baseline;
+  width: auto;
+  text-decoration: none !important;
+}
+
+.fafar-aw-clean-button:hover,
+.fafar-aw-clean-button:focus {
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.fafar-aw-clean-button:hover {
+  transform: translateY(-1px);
+}
+
+.fafar-aw-clean-button:active {
+  background-color: #f0f0f1;
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: rgba(0, 0, 0, 0.06) 0 2px 4px;
+  color: rgba(0, 0, 0, 0.65);
+  transform: translateY(0);
+}
+
+/*
+  END
+*/
