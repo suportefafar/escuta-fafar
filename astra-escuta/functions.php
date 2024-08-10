@@ -92,21 +92,21 @@ add_action( 'wp_footer', 'add_footer_custom_scripts_by_page' );
 
 */
 
-function gerar_lista_assistidos() {
+function gerar_lista_acolhidos() {
 	global $wpdb;
     
-    $assistidos = $wpdb->get_results("SELECT * FROM `wp_fafar_cf7crud_submissions` WHERE `form_id` = 54");
+    $acolhidos = $wpdb->get_results("SELECT * FROM `wp_fafar_cf7crud_submissions` WHERE `form_id` = 54");
     
 	$upload_dir    = wp_upload_dir();
     $cfdb7_dir_url = $upload_dir['baseurl'].'/fafar_cf7crud_uploads';
 
     $lines = "";
 
-    if ( empty( $assistidos ) ) {
+    if ( empty( $acolhidos ) ) {
         return '<div>Nenhum encontrado</div>';
     }
 
-	foreach ( $assistidos as $assistido ) {
+	foreach ( $acolhidos as $assistido ) {
 
 		$assistido_obj  = unserialize( $assistido->submission_data );
 
@@ -138,7 +138,7 @@ function gerar_lista_assistidos() {
     return $output;
 }
 
-add_shortcode('lista_assistidos', 'gerar_lista_assistidos');
+add_shortcode('lista_acolhidos', 'gerar_lista_acolhidos');
 
 
 function gerar_perfil_assistido() {
@@ -157,23 +157,15 @@ function gerar_perfil_assistido() {
 		return "<br>[002] Assistido não encontrado. Tente novamente mais tarde :-<";
 	}
 
-
-	$upload_dir    = wp_upload_dir();
-    $cfdb7_dir_url = $upload_dir['baseurl'].'/fafar_cf7crud_uploads';
-	$assistido_obj  = unserialize( $assistido[0]->submission_data );
-
+	// TODO NOT USED
 	$cfdb          = apply_filters( 'cfdb7_database', $wpdb );
 	$table_name    = $cfdb->prefix.'db7_forms';
 	$upload_dir    = wp_upload_dir();
 	$cfdb7_dir_url = $upload_dir['baseurl'].'/fafar_cf7crud_uploads';
 	$rm_underscore = apply_filters('cfdb7_remove_underscore_data', true); 
 
-
-	$atributos_assistido = array_keys( $assistido_obj );
-	
 	$form_data  = unserialize( $assistido[0]->submission_data );
-	
-	$arquivos  = array();
+	$arquivos   = array();
 	
 	$linhas_informacao_tabela = "";
 
@@ -228,28 +220,194 @@ function gerar_perfil_assistido() {
 		else if( strtolower( $val ) === "nao" || strtolower( $val ) === "não") $estilo_para_info_binaria = "texto-resposta-negativa";
 
 		$linhas_informacao_tabela .= "<tr class='linha-info-perfil' data-chave-info='" . $chave . "' data-linha-arquivo='" . $linha_info_arquivos . "'>";
-		$linhas_informacao_tabela .= 	"<td class='w-50'>" . strtoupper( $chave_val ) . "</td>";
+		$linhas_informacao_tabela .= 	"<td class='w-50'>" . $chave_val . "</td>";
 		$linhas_informacao_tabela .= 	"<td contenteditable='false' class='fw-bold info-valor " . $estilo_para_info_binaria . "'><div class='d-flex flex-column'>" . $val . "</div></td>";
 		$linhas_informacao_tabela .= "</tr>";
 
 	}
 
 
+	$table_name    = $cfdb->prefix.'db7_forms'; // TODO NOT USED
+	$escutas = $wpdb->get_results("SELECT * FROM `wp_fafar_cf7crud_submissions` WHERE `form_id` = 122" ); // TODO 'form_id' AS CONST
+	
+	$lista_escutas_str = "";
+
+	if ( ! empty( $escutas ) ) {
+
+		// Escutas mais novas primeiro
+		foreach ( array_reverse( $escutas ) as $escuta ) {
+
+			$escuta_unserialized  = unserialize( $escuta->submission_data );
+			$arquivos   = array();
+
+
+			if( $escuta_unserialized["id-acolhido"] !== $id ) continue;
+
+			$palavras_chave_str = "";
+			foreach( explode( ",", $escuta_unserialized["palavras-chave"] ) as $palavra_chave ) {
+
+				$palavras_chave_str .= "<span class='tag has-ast-global-color-0-background-color'>" . $palavra_chave . "</span>";
+
+			}
+
+
+			$data_escuta           = date_create( $escuta->created_at );
+			
+			$diff_to_edit_allow    = 86400 * 3; // 3 days in seconds
+			$data_escuta_timestamp = $data_escuta->getTimestamp();
+
+			$data_escuta           = date_format( $data_escuta, "d/m/Y H:i" );
+
+			// Data da próxima escuta
+			$data_proxima_escuta = "";
+			if( $escuta_unserialized["data-proxima-escuta"] ) {
+				$data_proxima_escuta = date_create( $escuta_unserialized["data-proxima-escuta"] );
+				$data_proxima_escuta         = date_format( $data_proxima_escuta, "d/m/Y" );
+			}
+			
+			
+			$current_user_id       = wp_get_current_user()->data->ID;
+			
+
+			$nome_profissional_responsavel = "--";
+			$id_profissional_responsavel = -2;
+			if( $escuta_unserialized["profissional"][0] ) {
+				
+				$id_profissional_responsavel = $escuta_unserialized["profissional"][0];
+
+				if( get_userdata( $id_profissional_responsavel ) ) {
+
+					$nome_profissional_responsavel = get_userdata( $id_profissional_responsavel )->display_name;
+
+				}
+
+			}
+
+
+			$allow_to_edit  = ( ( time() - $data_escuta_timestamp < $diff_to_edit_allow ) && 
+									$current_user_id === $id_profissional_responsavel );
+
+			$escuta_sigilosa = false;
+			if( is_array( $escuta_unserialized["sigiloso"] ) )
+				$escuta_sigilosa = ( $escuta_unserialized["sigiloso"][0] == "Sim" );
+			else
+				$escuta_sigilosa = ( $escuta_unserialized["sigiloso"] == "Sim" );
+
+			$aceita_tcl = false;
+			if( is_array( $escuta_unserialized["aceita-tcl"] ) )
+				$aceita_tcl = ( $escuta_unserialized["aceita-tcl"][0] == "Sim" );
+			else
+				$aceita_tcl = ( $escuta_unserialized["aceita-tcl"] == "Sim" );
+
+			
+
+			$lista_escutas_str .= "<div class='escuta-card'>
+										<div class='escuta-card-header'>
+											<p>" . $escuta_unserialized["origem-demanda"][0] . "</p>
+											" .
+												( $allow_to_edit ? "
+												<a href='/editar-escuta?id=" . $escuta->submission_id . "' class='escuta-card-header-edit-button'>
+													<span class='dashicons dashicons-edit-large'></span>
+												</a>" 
+												:
+												"" )
+											. "
+										</div>
+										<div class='escuta-card-body'>
+											<p>" . $escuta_unserialized["tipo-escuta"][0] . "</p>
+
+											<p>" . $escuta_unserialized["descricao-origem-demanda"] . "</p>
+											
+											<p>" . 
+												( ( $escuta_sigilosa && $current_user_id !== $id_profissional_responsavel ) 
+												? 
+												"<div class='escuta-body-block-content'></div>" 
+												: 
+												$escuta_unserialized["encaminhamento"] ) 
+												. "</p>
+
+											<p>" . 
+												( ( $escuta_sigilosa && $current_user_id !== $id_profissional_responsavel ) 
+												? 
+												"<div class='escuta-body-block-content-large'></div>" 
+												: 
+												$escuta_unserialized["anotacoes"] ) 
+												. "</p>
+										</div>
+										<div class='escuta-card-footer'>
+											<div class='footer-options'>
+												<div>
+													<span class='dashicons dashicons-clock'></span>
+													<span>" . $data_escuta . "</span>
+												</div>
+												<div>
+													<span class='dashicons dashicons-admin-users'></span>
+													<span>" . $nome_profissional_responsavel . "</span>
+												</div>
+												" .
+												( 
+													( $aceita_tcl ) ? 
+													"<div>
+														<span class='dashicons dashicons-thumbs-up'></span>
+														<span>TCL</span>
+													</div>" 
+													: 
+													"<div>
+														<span class='dashicons dashicons-thumbs-down'></span>
+														<span>TCL</span>
+													</div>" 
+												) 
+												. "
+												" .
+												( 
+													( $data_proxima_escuta ) ? 
+													"<div>
+														<span class='dashicons dashicons-calendar'></span>
+														<span>" . $data_proxima_escuta . "</span>
+													</div>" 
+													: 
+													"" 
+												) 
+												. "
+												" .
+												( 
+													( $escuta_sigilosa ) ? 
+													"<div>
+														<span class='dashicons dashicons-hidden'></span>
+														<span>Sigiloso</span>
+													</div>" 
+													: 
+													"" 
+												) 
+												. "
+											</div>
+											<div class='footer-tags'>
+												" . $palavras_chave_str . "
+											</div>
+										</div>
+									</div>";
+		}
+	}
+
+
+	$lista_escutas_str = $lista_escutas_str !== "" ? $lista_escutas_str : "Nenhuma escuta cadastrada :-<";
+
+
 	return "
-			    <div class='d-flex flex-column gap-2'>
-					<h5>" . ( empty( $assistido_obj["nome-social"] ) ? $assistido_obj["nome"] : $assistido_obj["nome-social"] ) . "</h5>
+			    <div class='d-flex flex-column gap-2 mb-4'>
+					<h5>" . ( empty( $form_data["nome-social"] ) ? $form_data["nome"] : $form_data["nome-social"] ) . "</h5>
 					
 					<div class='container-perfil-imagem'>
 						<img
-							src='" . $cfdb7_dir_url . '/' . $assistido_obj["fotofafarcf7crudfile"] . "'
+							src='" . $cfdb7_dir_url . '/' . $form_data["fotofafarcf7crudfile"] . "'
 							alt=''
-							class='w-50 h-50'
+							class='w-25 h-25'
 						/>
 					</div>
 
 					<div class='d-flex justify-content-between gap-4 my-4'>
 						<a class='fafar-aw-clean-button has-ast-global-color-0-color has-ast-global-color-5-background-color' 
-						href='/nova-escuta?assistido=" . $id . "'>
+						href='/nova-escuta?id-acolhido=" . $id . "'>
 							<span class='dashicons dashicons-plus-alt'></span> Nova Escuta
 						</a>
 
@@ -266,12 +424,9 @@ function gerar_perfil_assistido() {
 						</tbody>
 					</table>
 					
-					<p class='fw-bold'>Escutas</p>
-					<p>
-						Nenhuma escuta castrada.
-					</p>
-				</div>
-			";
+					<h5 class='fw-bold'>Escutas</h5>
+					" . $lista_escutas_str . "
+				</div>";
 
 }
 
